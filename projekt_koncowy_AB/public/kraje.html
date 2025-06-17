@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista krajów</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Lista krajów</h1>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Kod</th>
+        <th>Nazwa</th>
+      </tr>
+    </thead>
+    <tbody id="kraje-tabela"></tbody>
+  </table>
+  <script>
+    fetch('/kraje')
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.getElementById('kraje-tabela');
+        data.forEach(kraj => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${kraj.id}</td><td>${kraj.nazwa}</td>`;
+          tbody.appendChild(tr);
+        });
+      });
+  </script>
+</body>
+</html>

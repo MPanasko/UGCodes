@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuwanie danych</title>
+  <link rel="stylesheet" href="style.css">
+    <style>
+    select, input, label, button {
+      display: block;
+      margin: auto;
+      width: 300px;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Usuwanie danych</h1>
+  <label for="typ">Wybierz typ danych:</label>
+  <select id="typ">
+    <option value="">-- wybierz --</option>
+    <option value="kraj">Kraj</option>
+    <option value="hodowla">Hodowla</option>
+    <option value="kon">Koń</option>
+  </select>
+  <div id="lista"></div>
+  <div id="info"></div>
+  <script>
+    const typSelect = document.getElementById('typ');
+    const listaDiv = document.getElementById('lista');
+    const infoDiv = document.getElementById('info');
+
+    typSelect.addEventListener('change', async () => {
+      infoDiv.textContent = '';
+      listaDiv.innerHTML = '';
+      if (!typSelect.value) return;
+      let url = '';
+      if (typSelect.value === 'kraj') url = '/kraje';
+      if (typSelect.value === 'hodowla') url = '/hodowle';
+      if (typSelect.value === 'kon') url = '/konie';
+      const res = await fetch(url);
+      const data = await res.json();
+      listaDiv.innerHTML = `<label for="id">Wybierz ID do usunięcia:</label>
+        <select id="idWybor">
+          <option value="">-- wybierz --</option>
+          ${data.map(d => `<option value="${d.id || d.id_konia}">${d.id || d.id_konia} ${d.nazwa ? '- ' + d.nazwa : (d.imie ? '- ' + d.imie : '')}</option>`).join('')}
+        </select>
+        <button id="usunBtn" disabled>Usuń</button>`;
+      const idWybor = document.getElementById('idWybor');
+      const usunBtn = document.getElementById('usunBtn');
+      idWybor.addEventListener('change', function() {
+        usunBtn.disabled = !this.value;
+      });
+      usunBtn.addEventListener('click', async function() {
+        if (!idWybor.value) return;
+        let url = '';
+        if (typSelect.value === 'kraj') url = '/usun-kraj/' + idWybor.value;
+        if (typSelect.value === 'hodowla') url = '/usun-hodowle/' + idWybor.value;
+        if (typSelect.value === 'kon') url = '/usun-konia/' + idWybor.value;
+        const res = await fetch(url, { method: 'DELETE' });
+        infoDiv.textContent = await res.text();
+        idWybor.selectedIndex = 0;
+        usunBtn.disabled = true;
+      });
+    });
+  </script>
+</body>
+</html>

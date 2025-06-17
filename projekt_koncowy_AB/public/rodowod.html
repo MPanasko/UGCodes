@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Rodowód konia</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; }
+    .info { margin: 30px auto; max-width: 600px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px #ccc; }
+    .info h2 { margin-top: 0; }
+    table { border-collapse: collapse; margin: 30px auto; }
+    td, th { border: 1px solid #aaa; padding: 8px; text-align: center; min-width: 120px; }
+    .plec-klacz { color: #d35400; }
+    .plec-ogier { color: #2980b9; }
+    .plec-walach { color: #555; }
+    .empty { color: #bbb; }
+  </style>
+</head>
+<body>
+  <h1>Rodowód konia</h1>
+  <form id="szukajForm">
+    <label>ID konia: <input type="number" name="id_konia" required></label>
+    <button type="submit">Pokaż rodowód</button>
+  </form>
+  <div id="wynik"></div>
+  <script>
+    // Funkcja do pobierania wszystkich węzłów na danym poziomie
+    function getLevelNodes(root, depth) {
+      if (depth === 1) return [root];
+      let nodes = [];
+      if (root) {
+        nodes = nodes.concat(getLevelNodes(root.matka, depth - 1));
+        nodes = nodes.concat(getLevelNodes(root.ojciec, depth - 1));
+      } else {
+        nodes = nodes.concat(getLevelNodes(null, depth - 1));
+        nodes = nodes.concat(getLevelNodes(null, depth - 1));
+      }
+      return nodes;
+    }
+
+    function renderCell(kon) {
+      if (!kon) return `<div class="empty">(brak)</div>`;
+      const plecClass = kon.plec === 'klacz' ? 'plec-klacz' : (kon.plec === 'ogier' ? 'plec-ogier' : 'plec-walach');
+      return `<div class="${plecClass}">
+        <b>${kon.imie || '(brak imienia)'}</b><br>
+        [${kon.plec || '?'}] (${kon.rasa || '?'}, ${kon.masc || '?'}, ${kon.rok_urodzenia || '?'})<br>
+        Kraj: ${kon.kraj_nazwa || '-'}<br>
+        ID: ${kon.id_konia}
+      </div>`;
+    }
+
+    function renderTreeTable(root, depth) {
+      let html = '<table>';
+      for (let d = depth; d >= 1; d--) {
+        const nodes = getLevelNodes(root, d);
+        const colspan = Math.pow(2, depth - d);
+        html += '<tr>';
+        nodes.forEach(node => {
+          html += `<td colspan="${colspan}">${renderCell(node)}</td>`;
+        });
+        html += '</tr>';
+      }
+      html += '</table>';
+      return html;
+    }
+
+    document.getElementById('szukajForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const id = this.id_konia.value;
+      const wynik = document.getElementById('wynik');
+      wynik.textContent = 'Ładowanie...';
+      const res = await fetch(`/szczegoly-konia/${id}`);
+      if (!res.ok) {
+        wynik.textContent = await res.text();
+        return;
+      }
+      const { kon, drzewo } = await res.json();
+      wynik.innerHTML = `
+        <div class="info">
+          <h2>${kon.imie || '(brak imienia)'}</h2>
+          <b>ID:</b> ${kon.id_konia}<br>
+          <b>Płeć:</b> ${kon.plec || '-'}<br>
+          <b>Rasa:</b> ${kon.rasa || '-'}<br>
+          <b>Maść:</b> ${kon.masc || '-'}<br>
+          <b>Rok urodzenia:</b> ${kon.rok_urodzenia || '-'}<br>
+          <b>Hodowla:</b> ${kon.hodowla_nazwa || '-'}<br>
+          <b>Kraj:</b> ${kon.kraj_nazwa || '-'}<br>
+          <b>ID matki:</b> ${kon.matka || '-'}<br>
+          <b>ID ojca:</b> ${kon.ojciec || '-'}
+        </div>
+        <h2>Drzewo genealogiczne 3 pokoleń</h2>
+        ${renderTreeTable(drzewo, 3)}
+      `;
+    };
+  </script>
+</body>
+</html>

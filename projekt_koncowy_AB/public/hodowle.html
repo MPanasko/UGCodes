@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista hodowli</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    table { border-collapse: collapse; width: 60%; margin: 20px auto; }
+    th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
+    th { background: #eee; }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center;">Lista hodowli</h1>
+  <table id="hodowleTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nazwa</th>
+        <th>Kraj</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Wiersze zostaną dodane przez JS -->
+    </tbody>
+  </table>
+  <script>
+    fetch('/hodowle')
+      .then(res => res.json())
+      .then(data => {
+        const tbody = document.querySelector('#hodowleTable tbody');
+        data.forEach(hodowla => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${hodowla.id}</td>
+            <td>${hodowla.nazwa}</td>
+            <td>${hodowla.kraj}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(err => {
+        document.body.innerHTML += '<p style="color:red;text-align:center;">Błąd podczas pobierania danych.</p>';
+      });
+  </script>
+</body>
+</html>

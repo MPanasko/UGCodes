@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Dodaj konia</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Dodaj konia</h1>
+  <form action="/dodaj-konia" method="POST">
+    <label for="imie">Imię konia:</label>
+    <input type="text" id="imie" name="imie" required><br><br>
+
+    <label for="id_hodowli">Hodowla:</label>
+    <select id="id_hodowli" name="id_hodowli" required></select><br><br>
+
+    <label for="rok_urodzenia">Rok urodzenia:</label>
+    <input type="number" id="rok_urodzenia" name="rok_urodzenia" required min="1900" max="2100"><br><br>
+
+    <label for="plec">Płeć:</label>
+    <select id="plec" name="plec" required>
+      <option value="">Wybierz</option>
+      <option value="klacz">Klacz</option>
+      <option value="ogier">Ogier</option>
+      <option value="walach">Walach</option>
+    </select><br><br>
+
+    <label for="matka">ID matki:</label>
+    <input type="number" id="matka" name="matka" min="1"><br><br>
+
+    <label for="ojciec">ID ojca:</label>
+    <input type="number" id="ojciec" name="ojciec" min="1"><br><br>
+
+    <label for="rasa">Rasa:</label>
+    <select id="rasa" name="rasa" required>
+      <option value="">Wybierz</option>
+      <option value="XX">XX</option>
+      <option value="OO">OO</option>
+      <option value="XO">XO</option>
+      <option value="XXOO">XXOO</option>
+    </select><br><br>
+
+    <label for="masc">Maść:</label>
+    <select id="masc" name="masc" required>
+      <option value="">Wybierz</option>
+      <option value="Kasztanowa">Kasztanowa</option>
+      <option value="Gniada">Gniada</option>
+      <option value="Kara">Kara</option>
+      <option value="biała">Biała</option>
+    </select><br><br>
+
+    <button type="submit">Dodaj konia</button>
+  </form>
+  <script>
+    // Wypełnij select hodowli
+    fetch('/hodowle')
+      .then(res => res.json())
+      .then(data => {
+        const select = document.getElementById('id_hodowli');
+        data.forEach(hodowla => {
+          const option = document.createElement('option');
+          option.value = hodowla.id;
+          option.textContent = `${hodowla.nazwa} (${hodowla.kraj})`;
+          select.appendChild(option);
+        });
+      });
+
+    // Blokowanie wyboru rasy i maści jeśli podano oba ID rodziców
+    const matka = document.getElementById('matka');
+    const ojciec = document.getElementById('ojciec');
+    const rasa = document.getElementById('rasa');
+    const masc = document.getElementById('masc');
+
+    function checkParents() {
+      if (matka.value && ojciec.value) {
+        rasa.disabled = true;
+        rasa.value = "";
+        masc.disabled = true;
+        masc.value = "";
+      } else {
+        rasa.disabled = false;
+        masc.disabled = false;
+      }
+    }
+
+    matka.addEventListener('input', checkParents);
+    ojciec.addEventListener('input', checkParents);
+    window.addEventListener('DOMContentLoaded', checkParents);
+  </script>
+</body>
+</html>

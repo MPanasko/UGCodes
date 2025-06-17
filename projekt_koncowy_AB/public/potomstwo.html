@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Potomstwo konia</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    table { border-collapse: collapse; margin: 30px auto; }
+    th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Potomstwo konia</h1>
+  <form id="filtrForm">
+    <label>ID konia (rodzica): <input type="number" name="id_konia" required></label>
+    <label>Płeć:
+      <select name="plec">
+        <option value="">Dowolna</option>
+        <option value="klacz">Klacz</option>
+        <option value="ogier">Ogier</option>
+        <option value="walach">Walach</option>
+      </select>
+    </label>
+    <label>Hodowca:
+      <select name="hodowca" id="hodowcaSelect">
+        <option value="">Dowolny</option>
+      </select>
+    </label>
+    <label>Rok urodzenia: <input type="number" name="rok_urodzenia" min="1900" max="2100"></label>
+    <button type="submit">Filtruj</button>
+  </form>
+  <div id="wynik"></div>
+  <script>
+    // Pobierz listę hodowli do selecta
+    fetch('/hodowle')
+      .then(res => res.json())
+      .then(data => {
+        const select = document.getElementById('hodowcaSelect');
+        data.forEach(h => {
+          const option = document.createElement('option');
+          option.value = h.id;
+          option.textContent = `${h.nazwa} (${h.kraj})`;
+          select.appendChild(option);
+        });
+      });
+
+    document.getElementById('filtrForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const id_konia = this.id_konia.value;
+      const plec = this.plec.value;
+      const hodowca = this.hodowca.value;
+      const rok_urodzenia = this.rok_urodzenia.value;
+      let url = `/potomstwo/${id_konia}?`;
+      if (plec) url += `plec=${encodeURIComponent(plec)}&`;
+      if (hodowca) url += `hodowca=${encodeURIComponent(hodowca)}&`;
+      if (rok_urodzenia) url += `rok_urodzenia=${encodeURIComponent(rok_urodzenia)}&`;
+      const wynik = document.getElementById('wynik');
+      wynik.textContent = 'Ładowanie...';
+      const res = await fetch(url);
+      if (!res.ok) {
+        wynik.textContent = await res.text();
+        return;
+      }
+      const data = await res.json();
+      if (!data.length) {
+        wynik.textContent = 'Brak potomstwa spełniającego kryteria.';
+        return;
+      }
+      wynik.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Imię</th><th>Płeć</th><th>Rasa</th><th>Maść</th>
+              <th>Rok urodzenia</th><th>Hodowla</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.map(kon => `
+              <tr>
+                <td>${kon.id_konia}</td>
+                <td>${kon.imie || ''}</td>
+                <td>${kon.plec || ''}</td>
+                <td>${kon.rasa || ''}</td>
+                <td>${kon.masc || ''}</td>
+                <td>${kon.rok_urodzenia || ''}</td>
+                <td>${kon.hodowla_nazwa || ''} (${kon.hodowla_kraj || ''})</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    };
+  </script>
+</body>
+</html>

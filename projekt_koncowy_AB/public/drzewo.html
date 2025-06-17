@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Drzewo genealogiczne konia (tabela)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+       margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    form {
+      background: #fff;
+      max-width: 600px;
+      margin: 30px auto 20px auto;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px #ccc;
+    }
+    select, input, label {
+      display: block;
+      margin: auto;
+      width: 300px;
+      padding: 10px;
+    }
+    button {
+      background: #2980b9;
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.2s;
+      display: block;
+      margin: auto;
+    }
+    button:hover {
+      background: #1c5d85;
+    }
+    .tabela-drzewo-container {
+      width: 100%;
+      overflow-x: auto;
+      margin: 30px auto;
+      max-width: 98vw;
+    }
+    table {
+      border-collapse: collapse;
+      margin: 0 auto;
+      background: #fff;
+      min-width: 600px;
+      max-width: 2000px;
+    }
+    td, th {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: center;
+      min-width: 120px;
+    }
+    .plec-klacz { color: #d35400; }
+    .plec-ogier { color: #2980b9; }
+    .plec-walach { color: #555; }
+    .empty { color: #bbb; }
+  </style>
+</head>
+<body>
+  <h1>Drzewo genealogiczne konia (tabela)</h1>
+  <form id="drzewoForm">
+    <label>ID konia: <input type="number" name="id_konia" required></label>
+    <label>Głębokość drzewa: <input type="number" name="glebokosc" min="1" max="6" value="3" required></label>
+    <button type="submit">Pokaż drzewo</button>
+  </form>
+  <div id="wynik"></div>
+  <script>
+    // Funkcja do pobierania wszystkich węzłów na danym poziomie
+    function getLevelNodes(root, depth) {
+      if (depth === 1) return [root];
+      let nodes = [];
+      if (root) {
+        nodes = nodes.concat(getLevelNodes(root.matka, depth - 1));
+        nodes = nodes.concat(getLevelNodes(root.ojciec, depth - 1));
+      } else {
+        // Jeśli brak rodzica, wstaw pusty węzeł
+        nodes = nodes.concat(getLevelNodes(null, depth - 1));
+        nodes = nodes.concat(getLevelNodes(null, depth - 1));
+      }
+      return nodes;
+    }
+
+    // Funkcja do renderowania komórki konia
+    function renderCell(kon) {
+      if (!kon) return `<div class="empty">(brak)</div>`;
+      const plecClass = kon.plec === 'klacz' ? 'plec-klacz' : (kon.plec === 'ogier' ? 'plec-ogier' : 'plec-walach');
+      return `<div class="${plecClass}">
+        <b>${kon.imie || '(brak imienia)'}</b><br>
+        [${kon.plec || '?'}] (${kon.rasa || '?'}, ${kon.masc || '?'}, ${kon.rok_urodzenia || '?'})<br>
+        ID: ${kon.id_konia}
+      </div>`;
+    }
+
+    // Funkcja do renderowania całej tabeli drzewa
+    function renderTreeTable(root, depth) {
+      let html = '<table>';
+      for (let d = depth; d >= 1; d--) {
+        const nodes = getLevelNodes(root, d);
+        const colspan = Math.pow(2, depth - d);
+        html += '<tr>';
+        nodes.forEach(node => {
+          html += `<td colspan="${colspan}">${renderCell(node)}</td>`;
+        });
+        html += '</tr>';
+      }
+      html += '</table>';
+      return html;
+    }
+
+    document.getElementById('drzewoForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const id = this.id_konia.value;
+      const glebokosc = this.glebokosc.value;
+      const wynik = document.getElementById('wynik');
+      wynik.textContent = 'Ładowanie...';
+      const res = await fetch(`/drzewo/${id}/${glebokosc}`);
+      if (!res.ok) {
+        wynik.textContent = await res.text();
+        return;
+      }
+      const drzewo = await res.json();
+      wynik.innerHTML = renderTreeTable(drzewo, parseInt(glebokosc, 10));
+    };
+  </script>
+</body>
+</html>

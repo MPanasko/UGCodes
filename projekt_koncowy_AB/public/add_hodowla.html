@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Dodaj hodowlę</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Dodaj hodowlę</h1>
+  <form action="/dodaj-hodowle" method="POST">
+    <label for="nazwa">Nazwa hodowli:</label>
+    <input type="text" id="nazwa" name="nazwa" required><br><br>
+    <label for="kraj">Kraj:</label>
+    <select id="kraj" name="kraj" required>
+      <option value="">Wybierz kraj...</option>
+    </select><br><br>
+  <h4>Jeśli brauje kraju kliknij <a href="add_kraj.html">tutaj</a> aby dodać kraj</h2>
+    <button type="submit">Dodaj</button>
+  </form>
+  <script>
+    fetch('/kraje')
+      .then(res => res.json())
+      .then(data => {
+        const select = document.getElementById('kraj');
+        data.forEach(kraj => {
+          const option = document.createElement('option');
+          option.value = kraj.id;
+          option.textContent = `${kraj.nazwa} (${kraj.id})`;
+          select.appendChild(option);
+        });
+      });
+  </script>
+</body>
+</html>

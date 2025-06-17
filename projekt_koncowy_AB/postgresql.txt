@@ -1,0 +1,53 @@
+Instrukcja obsługi PostgreSQL: połączenie z bazą i wykonanie pliku create.sql
+=============================================================================
+
+1. Instalacja PostgreSQL
+------------------------
+Pobierz i zainstaluj PostgreSQL ze strony: https://www.postgresql.org/download/windows/
+Podczas instalacji zapamiętaj nazwę użytkownika (domyślnie: postgres) i hasło.
+
+2. Dodanie PostgreSQL do zmiennej PATH (jeśli psql nie działa w terminalu)
+--------------------------------------------------------------------------
+- Otwórz folder, gdzie zainstalowałeś PostgreSQL, np. C:\Program Files\PostgreSQL\16\bin
+- Skopiuj tę ścieżkę.
+- Otwórz Panel sterowania → System → Zaawansowane ustawienia systemu → Zmienne środowiskowe.
+- W sekcji "Zmienne systemowe" znajdź "Path" i kliknij "Edytuj".
+- Dodaj nową linię z tą ścieżką i zatwierdź.
+
+3. Uruchomienie terminala i połączenie z PostgreSQL
+---------------------------------------------------
+- Otwórz terminal (cmd lub PowerShell).
+- Połącz się z PostgreSQL poleceniem:
+  psql -U postgres
+- Jeśli chcesz od razu połączyć się z konkretną bazą:
+  psql -U postgres -d NAZWA_BAZY
+
+4. Tworzenie nowej bazy danych (jeśli jeszcze nie istnieje)
+-----------------------------------------------------------
+W terminalu psql wpisz:
+  CREATE DATABASE NAZWA_BAZY;
+
+5. Wykonanie pliku create.sql (np. z definicją tabel)
+-----------------------------------------------------
+- Upewnij się, że plik create.sql znajduje się w folderze, w którym jesteś w terminalu.
+- W terminalu wpisz:
+  psql -U postgres -d NAZWA_BAZY -f create.sql
+
+6. Sprawdzenie, czy tabele zostały utworzone
+--------------------------------------------
+- Połącz się z bazą:
+  psql -U postgres -d NAZWA_BAZY
+- Wyświetl listę tabel:
+  \dt
+
+7. Wyjście z psql
+-----------------
+Wpisz:
+  \q
+
+Uwagi:
+------
+- Polecenia SQL w pliku create.sql muszą być zakończone średnikiem (;).
+- Jeśli pojawi się prośba o hasło, wpisz hasło ustawione podczas instalacji PostgreSQL.
+- Jeśli plik create.sql jest w innym folderze, podaj pełną ścieżkę, np.:
+  psql -U postgres -d NAZWA_BAZY -f C:\Users\marti\Desktop\projekt końcowy

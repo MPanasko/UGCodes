@@ -1,0 +1,6 @@
+DROP TABLE kon;
+DROP TABLE hodowla;
+DROP TABLE kraj;
+DROP TYPE IF EXISTS plec_enum;
+DROP TYPE IF EXISTS rasa_enum;
+DROP TYPE IF EXISTS masc_enum;

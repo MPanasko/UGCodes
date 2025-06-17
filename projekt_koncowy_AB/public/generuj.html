@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Generuj konie</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Generowanie losowych koni</h1>
+  <form id="genForm">
+    <label>Ile koni wygenerować? (1-100): 
+      <input type="number" name="ile" min="1" max="100" required>
+    </label>
+    <button type="submit">Generuj</button>
+  </form>
+  <div id="wynik"></div>
+  <script>
+    document.getElementById('genForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const ile = this.ile.value;
+      const wynik = document.getElementById('wynik');
+      wynik.textContent = 'Generowanie...';
+      const res = await fetch('/generuj-konie', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ile })
+      });
+      wynik.textContent = await res.text();
+    };
+  </script>
+</body>
+</html>

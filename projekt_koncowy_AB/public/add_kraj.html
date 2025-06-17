@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Dodaj kraj</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Dodaj kraj</h1>
+  <form id="krajForm">
+    <label for="nazwa">Nazwa kraju:</label>
+    <select id="nazwa" name="nazwa" required>
+      <option value="">Wybierz kraj...</option>
+    </select>
+    <br><br>
+    <button type="submit">Dodaj kraj</button>
+  </form>
+  <div id="info"></div>
+  <script>
+    fetch('kody_krajow.json')
+      .then(res => res.json())
+      .then(data => {
+        const select = document.getElementById('nazwa');
+        data.forEach(kraj => {
+          const option = document.createElement('option');
+          option.value = kraj.id;
+          option.textContent = kraj.nazwa;
+          select.appendChild(option);
+        });
+      });
+
+    document.getElementById('krajForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const select = document.getElementById('nazwa');
+      const kod = select.value;
+      const nazwa = select.options[select.selectedIndex].text;
+      fetch('/dodaj-kraj', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: kod, nazwa })
+      })
+      .then(res => res.text())
+      .then(msg => {
+        document.getElementById('info').textContent = msg;
+      });
+    });
+  </script>
+</body>
+</html>
