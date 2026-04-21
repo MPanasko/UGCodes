@@ -1,0 +1,153 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <string>
+#include <chrono>
+#include <iomanip>
+#include <optional>
+#include <algorithm>
+
+// ============================================================================
+// ZADANIE 1: Sprawdzanie sześcianu liczby
+// ============================================================================
+
+/**
+ * W C++ używamy std::optional (C++17), aby zasygnalizować brak wyniku.
+ * W C musielibyśmy użyć wskaźników lub specjalnych wartości (np. -1).
+ */
+bool isCube(long long n) {
+    if (n == 0) return true;
+
+    // std::cbrt (cmath) obsługuje liczby ujemne automatycznie
+    double root = std::round(std::cbrt(static_cast<double>(n)));
+    
+    // Sprawdzenie precyzji: czy root^3 faktycznie daje n
+    return static_cast<long long>(root * root * root) == n;
+}
+
+// ============================================================================
+// ZADANIE 2: Liczby Armstronga
+// ============================================================================
+
+/**
+ * Wykorzystujemy std::string i std::to_string (C++11) do łatwej analizy cyfr.
+ * W C wymagałoby to skomplikowanego operowania na tablicach char lub modulo.
+ */
+bool isArmstrong(long long n) {
+    if (n < 0) return false;
+
+    std::string s = std::to_string(n);
+    int numDigits = s.length();
+    long long sum = 0;
+
+    for (char c : s) {
+        int digit = c - '0'; // Konwersja char na int
+        sum += std::pow(digit, numDigits);
+    }
+
+    return sum == n;
+}
+
+/**
+ * Funkcja generująca liczby Armstronga w zadanym zakresie.
+ * Wykorzystuje std::vector (dynamiczna tablica C++).
+ */
+std::vector<long long> findArmstrongNumbers(long long limit) {
+    std::vector<long long> results;
+    for (long long i = 0; i <= limit; ++i) {
+        if (isArmstrong(i)) {
+            results.push_back(i);
+        }
+    }
+    return results;
+}
+
+// ============================================================================
+// ZADANIE 3: Dwumian Newtona i NWD
+// ============================================================================
+
+// --- Dwumian Newtona ---
+
+// Wersja rekurencyjna (Wzór Pascala)
+unsigned long long binomialRecursive(int n, int k) {
+    if (k == 0 || k == n) return 1;
+    return binomialRecursive(n - 1, k - 1) + binomialRecursive(n - 1, k);
+}
+
+// Wersja iteracyjna (Wzór mnożeniowy)
+unsigned long long binomialIterative(int n, int k) {
+    if (k > n) return 0;
+    if (k == 0 || k == n) return 1;
+    if (k > n - k) k = n - k; // Optymalizacja symetrii
+
+    unsigned long long result = 1;
+    for (int i = 1; i <= k; ++i) {
+        result = result * (n - i + 1) / i;
+    }
+    return result;
+}
+
+// --- NWD (Algorytm Euklidesa) ---
+
+// Wersja rekurencyjna
+long long gcdRecursive(long long a, long long b) {
+    a = std::abs(a); b = std::abs(b);
+    if (b == 0) return a;
+    return gcdRecursive(b, a % b);
+}
+
+// Wersja iteracyjna
+long long gcdIterative(long long a, long long b) {
+    a = std::abs(a); b = std::abs(b);
+    while (b != 0) {
+        long long temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
+// ============================================================================
+// POMIARY I TESTY
+// ============================================================================
+
+int main() {
+    // Ustawienie formatowania wyjścia (iomanip)
+    std::cout << std::fixed << std::setprecision(4);
+
+    std::cout << "--- ZADANIE 1: TEST SZESCIANOW ---\n";
+    std::vector<long long> testNumbers = {27, -64, 100, 343, -1331};
+    for (long long n : testNumbers) {
+        std::cout << "Czy " << n << " to szescian? " << (isCube(n) ? "TAK" : "NIE") << "\n";
+    }
+
+    std::cout << "\n--- ZADANIE 2: LICZBY ARMSTRONGA (do 10,000) ---\n";
+    auto armstrongs = findArmstrongNumbers(10000);
+    for (long long val : armstrongs) std::cout << val << " ";
+    std::cout << "\n";
+
+    std::cout << "\n--- ZADANIE 3: POMIARY CZASU (std::chrono) ---\n";
+    
+    int n = 30, k = 15;
+    
+    // Pomiar dla rekurencji
+    auto start = std::chrono::high_resolution_clock::now();
+    unsigned long long resRec = binomialRecursive(n, k);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsedRec = end - start;
+
+    // Pomiar dla iteracji
+    start = std::chrono::high_resolution_clock::now();
+    unsigned long long resIter = binomialIterative(n, k);
+    end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsedIter = end - start;
+
+    std::cout << "Symbol Newtona C(" << n << ", " << k << "):\n";
+    std::cout << "Rekurencja: " << resRec << " | Czas: " << elapsedRec.count() << " ms\n";
+    std::cout << "Iteracja:   " << resIter << " | Czas: " << elapsedIter.count() << " ms\n";
+
+    std::cout << "\nNWD dla 123456789 i 987654321:\n";
+    std::cout << "Wynik: " << gcdIterative(123456789, 987654321) << "\n";
+
+    return 0;
+}
