@@ -11,10 +11,6 @@
 // ZADANIE 1: Sprawdzanie sześcianu liczby
 // ============================================================================
 
-/**
- * W C++ używamy std::optional (C++17), aby zasygnalizować brak wyniku.
- * W C musielibyśmy użyć wskaźników lub specjalnych wartości (np. -1).
- */
 bool isCube(long long n) {
     if (n == 0) return true;
 
@@ -49,8 +45,7 @@ bool isArmstrong(long long n) {
 }
 
 /**
- * Funkcja generująca liczby Armstronga w zadanym zakresie.
- * Wykorzystuje std::vector (dynamiczna tablica C++).
+ * Funkcja generująca liczby Armstronga w zadanym zakresie
  */
 std::vector<long long> findArmstrongNumbers(long long limit) {
     std::vector<long long> results;
