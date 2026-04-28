@@ -1,21 +1,20 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <chrono>
 
 // =======================
-// SZESCian (naiwnie)
+// ZADANIE 1 – SZESCiAN
 // =======================
 bool isCube(long long n) {
     for (long long i = -10000; i <= 10000; i++) {
-        if (i * i * i == n) {
-            return true;
-        }
+        if (i * i * i == n) return true;
     }
     return false;
 }
 
 // =======================
-// ARMSTRONG (naiwnie)
+// ZADANIE 2 – ARMSTRONG
 // =======================
 bool isArmstrong(long long n) {
     if (n < 0) return false;
@@ -23,7 +22,6 @@ bool isArmstrong(long long n) {
     long long temp = n;
     int digits = 0;
 
-    // liczenie cyfr
     while (temp > 0) {
         digits++;
         temp /= 10;
@@ -32,13 +30,12 @@ bool isArmstrong(long long n) {
     temp = n;
     long long sum = 0;
 
-    // sumowanie
     while (temp > 0) {
         int d = temp % 10;
 
         long long power = 1;
         for (int i = 0; i < digits; i++) {
-            power *= d; // zamiast pow()
+            power *= d;
         }
 
         sum += power;
@@ -61,51 +58,95 @@ std::vector<long long> findArmstrongNumbers(long long limit) {
 }
 
 // =======================
-// DWUMIAN (naiwnie)
+// ZADANIE 3 – DWUMIAN
 // =======================
-unsigned long long binomialRecursive(int n, int k) {
+unsigned long long binomialRec(int n, int k) {
     if (k == 0 || k == n) return 1;
-    return binomialRecursive(n - 1, k - 1) + binomialRecursive(n - 1, k);
+    return binomialRec(n - 1, k - 1) + binomialRec(n - 1, k);
+}
+
+unsigned long long binomialIter(int n, int k) {
+    if (k > n) return 0;
+
+    unsigned long long result = 1;
+    for (int i = 1; i <= k; i++) {
+        result = result * (n - i + 1) / i;
+    }
+    return result;
 }
 
 // =======================
-// NWD (naiwnie)
+// ZADANIE 3 – NWD
 // =======================
-long long gcd(long long a, long long b) {
-    // brutalna metoda
-    long long min = (a < b) ? a : b;
+long long gcdRec(long long a, long long b) {
+    if (b == 0) return a;
+    return gcdRec(b, a % b);
+}
 
-    for (long long i = min; i >= 1; i--) {
-        if (a % i == 0 && b % i == 0) {
-            return i;
-        }
+long long gcdIter(long long a, long long b) {
+    while (b != 0) {
+        long long temp = b;
+        b = a % b;
+        a = temp;
     }
-
-    return 1;
+    return a;
 }
 
 // =======================
 // MAIN
 // =======================
 int main() {
+    using namespace std::chrono;
+
+    // ---- ZADANIE 1 ----
     std::cout << "SZESCIANY:\n";
     long long nums[] = {27, -64, 100, 343, -1331};
 
     for (int i = 0; i < 5; i++) {
-        std::cout << nums[i] << ": " << (isCube(nums[i]) ? "TAK" : "NIE") << "\n";
+        std::cout << nums[i] << ": "
+                  << (isCube(nums[i]) ? "TAK" : "NIE") << "\n";
     }
 
+    // ---- ZADANIE 2 ----
     std::cout << "\nARMSTRONG:\n";
-    std::vector<long long> a = findArmstrongNumbers(10000);
+    auto a = findArmstrongNumbers(10000);
     for (int i = 0; i < a.size(); i++) {
         std::cout << a[i] << " ";
     }
 
+    // ---- ZADANIE 3 – DWUMIAN ----
+    int n = 30, k = 15;
+
+    auto start = high_resolution_clock::now();
+    auto r1 = binomialRec(n, k);
+    auto end = high_resolution_clock::now();
+    auto t1 = duration<double, std::milli>(end - start);
+
+    start = high_resolution_clock::now();
+    auto r2 = binomialIter(n, k);
+    end = high_resolution_clock::now();
+    auto t2 = duration<double, std::milli>(end - start);
+
     std::cout << "\n\nDWUMIAN:\n";
-    std::cout << binomialRecursive(10, 5) << "\n";
+    std::cout << "Rekurencja: " << r1 << " czas: " << t1.count() << " ms\n";
+    std::cout << "Iteracja:   " << r2 << " czas: " << t2.count() << " ms\n";
+
+    // ---- ZADANIE 3 – NWD ----
+    long long x = 123456789, y = 987654321;
+
+    start = high_resolution_clock::now();
+    auto g1 = gcdRec(x, y);
+    end = high_resolution_clock::now();
+    auto tg1 = duration<double, std::milli>(end - start);
+
+    start = high_resolution_clock::now();
+    auto g2 = gcdIter(x, y);
+    end = high_resolution_clock::now();
+    auto tg2 = duration<double, std::milli>(end - start);
 
     std::cout << "\nNWD:\n";
-    std::cout << gcd(123456789, 987654321) << "\n";
+    std::cout << "Rekurencja: " << g1 << " czas: " << tg1.count() << " ms\n";
+    std::cout << "Iteracja:   " << g2 << " czas: " << tg2.count() << " ms\n";
 
     return 0;
 }
